@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2020???5???28??? ??????10:36:24 by Hibernate Tools 3.5.0.Final -->
+<hibernate-mapping>
+    <class name="com.springmvc.entities.Employee" table="EMPLOYEE">
+        <id name="id" type="java.lang.Integer">
+            <column name="ID" />
+            <generator class="native" />
+        </id>
+        <property name="lastName" type="java.lang.String">
+            <column name="LAST_NAME" />
+        </property>
+        <property name="email" type="java.lang.String">
+            <column name="EMAIL" />
+        </property>
+        <property name="gender" type="java.lang.String">
+            <column name="GENDER" />
+        </property>
+        <many-to-one name="Department" class="com.springmvc.entities.Department" lazy="false"  fetch="join" unique="true" not-null="true" cascade="all">
+            <column name="Dept_ID" />
+        </many-to-one>
+    </class>
+</hibernate-mapping>
