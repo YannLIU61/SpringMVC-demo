@@ -1,20 +1,29 @@
 package com.springmvc.handlers;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.springmvc.entities.User;
@@ -164,6 +173,25 @@ public class SpringMVCTest {
 	public String testView() {
 		System.out.println("Test View");
 		return "helloView";
+	}
+	@ResponseBody
+	@RequestMapping(value="/testMessageConverter")
+	public String testMessageConverter(@RequestBody String body) {
+		System.out.println(body);
+		return "Time: "+new Date();
+	}
+	@RequestMapping(value="/testResponseEntity")
+	public ResponseEntity<byte[]> testResponseEntity(HttpSession session) throws IOException{
+		byte[] body = null;
+		ServletContext servletContext = session.getServletContext();
+		InputStream in = servletContext.getResourceAsStream("/files/hello.txt");
+		body = new byte[in.available()];
+		in.read(body);
+		HttpHeaders headers= new HttpHeaders();
+		headers.add("Content-Disposition", "attachment;filename=hello.txt");
+		HttpStatus status= HttpStatus.OK;
+		ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(body, headers, status);
+		return response;
 	}
 
 }

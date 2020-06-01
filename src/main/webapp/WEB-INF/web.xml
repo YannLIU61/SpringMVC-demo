@@ -15,9 +15,6 @@
 		<filter-name>HiddenHttpMethodFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-	<listener>
-		<listener-class>com.springmvc.handlers.SpringContextListener</listener-class>
-	</listener>
 	<servlet>
 		<!-- 默认放在WEB-INF下: 命名方式 name-servlet.xml -->
 		<servlet-name>dispatcherServlet</servlet-name>

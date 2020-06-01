@@ -7,7 +7,7 @@
 </head>
 <body>
 	<!-- 使用 form标签: 可以快速的开发出表单页面, 而且更方便进行表单值回显 -->
-	<!-- 使用绝对路径 -->
+	<!-- 建议使用绝对路径 -->
 	<form:form action="${pageContect.request.contextPath}/SpringMVC/employeeManager/update" method="post" modelAttribute="employeeEdit">
 		<!-- path属性对应name属性值 -->
 		<!-- 修改的时候不显示 -->

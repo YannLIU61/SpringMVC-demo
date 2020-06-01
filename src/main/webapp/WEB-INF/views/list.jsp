@@ -12,7 +12,7 @@
 				<td>ID</td>
 				<td>Name</td>
 				<td>Gender</td>
-				<td>Departement</td>
+				<td>Department</td>
 				<td>Delete</td>
 				<td>Edit</td>
 			<tr>

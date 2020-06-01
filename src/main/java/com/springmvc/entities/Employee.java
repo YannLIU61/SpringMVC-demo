@@ -1,10 +1,19 @@
 package com.springmvc.entities;
 
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
+
 public class Employee {
 	private Integer id;
+	@NotEmpty
 	private String lastName;
+	@NotEmpty
+	@Email
 	private String email;
 	private String gender;
+
+//	@DateTimeFormat(pattern = "yyyy/month/day")
+//	private Date birth;
 
 	private Department department;
 

@@ -3,12 +3,65 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
-		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd">
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
 
+	<context:property-placeholder
+		location="classpath:db.properties" />
 	<context:component-scan
-		base-package="com.springmvc.handlers"></context:component-scan>
+		base-package="com.springmvc"></context:component-scan>
+	<bean id="dataSource"
+		class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="user" value="${user}"></property>
+		<property name="password" value="${password}"></property>
+		<property name="jdbcUrl" value="${jdbcurl}"></property>
+		<property name="driverClass" value="${driverclass}"></property>
+		<property name="initialPoolSize" value="${initialPoolSize}"></property>
+		<property name="maxPoolSize" value="${maxPoolSize}"></property>
+	</bean>
+	<!-- 配置Hibernate 的 SessionFactory -->
+	<!-- 导入springframework ORM jar包 -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocation"
+			value="classpath:hibernate.cfg.xml"></property>
+		<property name="mappingLocations"
+			value="classpath:com/springmvc/entities/*.hbm.xml"></property>
+		<!-- <property name="hibernateProperties"> <props> <prop key="hibernate.dialect">org.hibernate.dialect.Oracle9Dialect</prop> 
+			<prop key="hibernate.hbm2ddl.auto">update</prop> <prop key="hibernate.show_sql">true</prop> 
+			</props> </property> -->
+	</bean>
+	<!-- 配置声名事务 -->
+	<!--1.配置事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory">
+		</property>
+	</bean>
+	<!--2.配置事务属性,需要上面的transactionManager -->
+	<tx:advice id="txAdvice"
+		transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+
+	<!--3.配置事务切点AOP -->
+	<aop:config>
+		<aop:pointcut
+			expression="execution(* com.springmvc.dao.*.*(..))" id="txPointcut" />
+		<aop:advisor advice-ref="txAdvice"
+			pointcut-ref="txPointcut" />
+	</aop:config>
 
 	<!-- 配置视图解析器: 如何把handler 方法返回值解析为实际的物理视图 -->
 	<!-- 如果项目中使用了JSTL,那么Spring MCVC 会自动把InternalResourceView转换为JstlView -->
@@ -31,13 +84,29 @@
 		<property name="basename" value="i18n"></property>
 	</bean>
 
-	<!-- 直接访问WEB-INF下的页面, 无需经过handler -->
+	<!-- 1,直接访问WEB-INF下的页面, 无需经过handler -->
 	<mvc:view-controller path="/success"
 		view-name="success" />
 	<mvc:view-controller path="/input"
 		view-name="input" />
-		<!-- 允许请求静态资源 -->
+	<!-- 2,允许请求静态资源 -->
 	<mvc:default-servlet-handler />
 	<!-- 在实际开发中需要 配置mvc:annotation-driven -->
-	<mvc:annotation-driven></mvc:annotation-driven>
+	<!-- 当使用上述1,2时 需要配置 -->
+	<!-- 当自定义类型转换器 conversionService时也需要 -->
+	<!--数据格式化: 例如Date, model中Date参数,表格中要填如1995/11/27转换成Date类型->在参数前添加注解@DateTimeFormat(pattern="year/month/day") 
+		@NumberFormat(pattern="#,###,##") -->
+	<!-- <mvc:annotation-driven></mvc:annotation-driven> -->
+
+	<!--如果添加了自定义类型转换器 -->
+	<mvc:annotation-driven
+		conversion-service="conversionService"/>
+	<bean id="conversionService"
+		class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<set>
+				<ref bean="employeeConverter" />
+			</set>
+		</property>
+	</bean>
 </beans>
