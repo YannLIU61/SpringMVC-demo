@@ -2,16 +2,16 @@ package com.springmvc.handlers;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.springmvc.entities.User;
@@ -32,6 +33,16 @@ import com.springmvc.entities.User;
 @Controller
 public class SpringMVCTest {
 	private static final String SUCCESS = "success";
+
+	@Autowired
+	private ResourceBundleMessageSource messageSource;
+	@RequestMapping(value="/testFileUpload")
+	public String testFileUpload(@RequestParam("desc") String desc, @RequestParam("file") MultipartFile file) throws IOException {
+		System.out.println("desc: "+desc);
+		System.out.println("OriginalFilename: "+ file.getOriginalFilename());
+		System.out.println("InputStream: "+file.getInputStream());
+		return SUCCESS;
+	}
 
 	@RequestMapping(value = "/testMethod", method = RequestMethod.POST)
 	public String testMethod() {
@@ -113,9 +124,8 @@ public class SpringMVCTest {
 	}
 
 	/**
-	 * 处理数据模型
-	 * 一:
-	 * SpringMVC ModelAndView 会把model中的数据对象放在request域的对象中
+	 * 处理数据模型 一: SpringMVC ModelAndView 会把model中的数据对象放在request域的对象中
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/testModelAndView")
@@ -125,71 +135,81 @@ public class SpringMVCTest {
 		modelAndView.addObject("user", "Yan LIU");
 		return modelAndView;
 	}
+
 	/**
-	 * 二:
-	 * 可以添加Map类型(也可以是model类型活着modelmap类型)
+	 * 二: 可以添加Map类型(也可以是model类型活着modelmap类型)
+	 * 
 	 * @param map
 	 * @return
 	 */
 	@RequestMapping(value = "/testMap")
 	public String testMap(Map<String, Object> map) {
-		map.put("names", Arrays.asList("bonjour", "salut","bonsoir"));
+		map.put("names", Arrays.asList("bonjour", "salut", "bonsoir"));
 		return SUCCESS;
 	}
-	
+
 	/**
 	 * 有ModelAttribute标记的方法会在每个目标方法执行前被springmvc调用
+	 * 
 	 * @param id
 	 * @param model
 	 */
 	@ModelAttribute
-	public void getModel(@RequestParam(value = "id",required=false) Integer id, Model model) {
+	public void getModel(@RequestParam(value = "id", required = false) Integer id, Model model) {
 		System.out.println("Model Attribute----");
-		if(id!=null) {
-			User user = new User(1,"LIU","y@a","aaa",24);
-			System.out.println("Gets model from database:"+user);
+		if (id != null) {
+			User user = new User(1, "LIU", "y@a", "aaa", 24);
+			System.out.println("Gets model from database:" + user);
 			model.addAttribute("user", user);
 		}
 	}
+
 	/**
-	 * 运行流程:
-	 * 1. 执行@ModelAttribut 注解修饰的方法: 从数据库中取出对象, 把对象放在implicModel的 Map(Model)中. 键为:user(也可以自己设置 model.addAttribute("abc", user);)
-	 * 1.1 如果键改动可以在目标方法参数前修饰 如: public String testModelAttribute(@ModelAttribute(“abc”) User user)
-	 * 2. SpringMVC 先从implicModel的Map中取出User对象, (如果没有再尝试去@SessionAttribute中找, 没有的话会抛异常, )并把表单的请求参数付给User对象对应属性
-	 * 3. SpringMVC 把上述对象传入目标方法的参数.
+	 * 运行流程: 1. 执行@ModelAttribut 注解修饰的方法: 从数据库中取出对象, 把对象放在implicModel的 Map(Model)中.
+	 * 键为:user(也可以自己设置 model.addAttribute("abc", user);) 1.1 如果键改动可以在目标方法参数前修饰 如:
+	 * public String testModelAttribute(@ModelAttribute(“abc”) User user) 2.
+	 * SpringMVC 先从implicModel的Map中取出User对象, (如果没有再尝试去@SessionAttribute中找, 没有的话会抛异常,
+	 * )并把表单的请求参数付给User对象对应属性 3. SpringMVC 把上述对象传入目标方法的参数.
 	 * 
 	 * 注意⚠️: 放在Model时 的键名
+	 * 
 	 * @param user
 	 * @return
 	 */
-	@RequestMapping(value="/testModelAttribute",method = RequestMethod.POST )
+	@RequestMapping(value = "/testModelAttribute", method = RequestMethod.POST)
 	public String testModelAttribute(User user) {
-		
-		System.out.println("Modifier model: "+user);
+
+		System.out.println("Modifier model: " + user);
 		return SUCCESS;
 	}
-	
+
 	@RequestMapping(value = "/testView")
 	public String testView() {
 		System.out.println("Test View");
 		return "helloView";
 	}
+/**
+ * 把整个表单整合成一个String型
+ * @param body
+ * @return
+ */
 	@ResponseBody
-	@RequestMapping(value="/testMessageConverter")
+	@RequestMapping(value = "/testMessageConverter")
 	public String testMessageConverter(@RequestBody String body) {
 		System.out.println(body);
-		return "Time: "+new Date();
+		return "Time: " + new Date();
 	}
-	@RequestMapping(value="/testResponseEntity")
-	public ResponseEntity<byte[]> testResponseEntity(HttpSession session) throws IOException{
+
+	@RequestMapping(value = "/testResponseEntity")
+	public ResponseEntity<byte[]> testResponseEntity(HttpSession session) throws IOException {
 		byte[] body = null;
 		ServletContext servletContext = session.getServletContext();
 		InputStream in = servletContext.getResourceAsStream("/files/hello.txt");
 		body = new byte[in.available()];
 		in.read(body);
-		HttpHeaders headers= new HttpHeaders();
+		HttpHeaders headers = new HttpHeaders();
 		headers.add("Content-Disposition", "attachment;filename=hello.txt");
-		HttpStatus status= HttpStatus.OK;
+		HttpStatus status = HttpStatus.OK;
 		ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(body, headers, status);
 		return response;
 	}

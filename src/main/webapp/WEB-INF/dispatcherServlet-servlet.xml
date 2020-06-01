@@ -13,6 +13,13 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
 
+	<!-- 在这里我把Spring IOC 配置和 也放在SpringMVC 的配置文件中(不推荐) 类似于数据源, 事务 AOP, Service,整合其他框架(Hibernate) 
+		最好都放在Spring的配置文件中, SpringMVC 只负责handler的配置
+		
+		问题: 如果Spring的IOC容器和SpringMVC的IOC容器扫描的包有重合的地方,那么会导致bean被创建两次 
+		解决: 1).包分开,没有重合部分(实际不容易实现)
+			  2). 使用exclude-filter 和 include-filter 子节点(use-defalut-filters=false)
+		SpringMVC IOC 的bean可以引用Spring IOC 中的bean, 反之不行!!!! -->
 	<context:property-placeholder
 		location="classpath:db.properties" />
 	<context:component-scan
@@ -78,17 +85,28 @@
 		<property name="order" value="100"></property>
 	</bean>
 
-	<!-- 配置18n -->
+	<!-- 配置18n <fmt:message key=""> -->
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">
 		<property name="basename" value="i18n"></property>
 	</bean>
 
+	<!-- 点击链接切换语言 -->
+	<!-- SessionLocaleResolver -->
+	<bean id="localeResolver"
+		class="org.springframework.web.servlet.i18n.SessionLocaleResolver"></bean>
+	<!--配置LocaleChangeInterceptor -->
+	<mvc:interceptors>
+		<bean
+			class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"></bean>
+	</mvc:interceptors>
+
 	<!-- 1,直接访问WEB-INF下的页面, 无需经过handler -->
 	<mvc:view-controller path="/success"
 		view-name="success" />
-	<mvc:view-controller path="/input"
-		view-name="input" />
+	<mvc:view-controller path="/i18n" view-name="i18n" />
+	<mvc:view-controller path="/i18n2"
+		view-name="i18n2" />
 	<!-- 2,允许请求静态资源 -->
 	<mvc:default-servlet-handler />
 	<!-- 在实际开发中需要 配置mvc:annotation-driven -->
@@ -100,7 +118,7 @@
 
 	<!--如果添加了自定义类型转换器 -->
 	<mvc:annotation-driven
-		conversion-service="conversionService"/>
+		conversion-service="conversionService" />
 	<bean id="conversionService"
 		class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
 		<property name="converters">
@@ -108,5 +126,12 @@
 				<ref bean="employeeConverter" />
 			</set>
 		</property>
+	</bean>
+
+	<!-- 配置MultipartResolver -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF_8"></property>
+		<property name="maxUploadSize" value="1024000"></property>
 	</bean>
 </beans>

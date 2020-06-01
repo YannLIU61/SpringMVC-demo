@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>index</title>
 <script type="text/javascript">
-	$(f unction(){
+	$(function(){
 	$("#testJson").click(function(){
 		var url = this.href;
 		var args = {};
@@ -17,17 +17,24 @@
 			})
 	return false;
 		});
-		})
+		});
 </script>
 </head>
 <body>
-	<c:out value="HELLO"></c:out>
-	<br>
+<!--  MultipartResolver  实现文件上传 -->
+	<form action="springmvc/testFileUpload" enctype="multipart/form-data" method="post">
+	File:<input type="file" name="file">
+	Desc:<input type="text" name="desc">
+	<input type="submit" value="Upload">
+	</form>
+	<br><br>
+	<a href="i18n">I18N PAGE</a>
+	<br><br>
 	<!-- 文件下载 -->
 	<a href="springmvc/testResponseEntity"> Test ResponseEntity</a>
-	<br>
+	<br><br>
 	<!-- Test HttpMessageConverter  实现文件上传 -->
-	<form action="springmvc/testMessageConverter" method="post">
+	<form action="springmvc/testMessageConverter" enctype="multipart/form-data" method="post">
 	File:<input type="file" name="file">
 	Desc:<input type="text" name="desc">
 	<input type="submit" value="Upload">
@@ -38,9 +45,7 @@
 	<br>
 	<a href="employeeManager/list">List Employee</a>
 	<br>
-	<fmt:message key="name"></fmt:message>
-	<br>
-	<fmt:message key="password"></fmt:message>
+
 	<br>
 	<a href="springmvc/testRequestParam?username=LIU">Test request
 		param</a>
