@@ -9,14 +9,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,14 +26,43 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.springmvc.entities.User;
+import com.springmvc.exception.UserNamePasswordNotMatchException;
 
 @RequestMapping("/springmvc")
 @Controller
 public class SpringMVCTest {
 	private static final String SUCCESS = "success";
-
-	@Autowired
-	private ResourceBundleMessageSource messageSource;
+	
+	/**
+	 * 不能通过添加一个Map的方式将信息传到页面
+	 * 解决方法: 使用ModelAndView作为返回值
+	 * 可以单独建一个class 用 @ControllerAdvice注解标记
+	 * SimpleMappingException 可以在xml文件中配置, 特定异常转向指定页面
+	 * @param ex
+	 * @return
+	 */
+	@ExceptionHandler(ArithmeticException.class)
+	public ModelAndView handleArithmeticException(Exception ex) {
+		System.out.println("出现异常!!!!");
+		ModelAndView mv = new ModelAndView("errors");
+		mv.addObject("exception", ex);
+		return mv;
+	}
+	
+	@RequestMapping("/testResponseStatusException")
+	public String testResponseStatusException(@RequestParam("i") int i) {
+		if(i==10) {
+			throw new UserNamePasswordNotMatchException();
+		}
+		return SUCCESS;
+	}
+	
+	@RequestMapping("/testExceptionHandlerExceptionResolver")
+	public String testExceptionHandlerExceptionResolver(@RequestParam("i") int i) {	
+		System.out.println("Result: "+10/i);
+		return SUCCESS;
+	}
+	
 	@RequestMapping(value="/testFileUpload")
 	public String testFileUpload(@RequestParam("desc") String desc, @RequestParam("file") MultipartFile file) throws IOException {
 		System.out.println("desc: "+desc);

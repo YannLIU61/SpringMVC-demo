@@ -20,7 +20,12 @@
 		});
 </script>
 </head>
-<body>
+<body> 
+
+<a href="springmvc/testResponseStatusException?i=9">Test ResponseStatusException</a>
+<br><br>
+<a href="springmvc/testExceptionHandlerExceptionResolver?i=10">Test ExceptionHandlerExceptionResolver</a>
+<br><br>
 <!--  MultipartResolver  实现文件上传 -->
 	<form action="springmvc/testFileUpload" enctype="multipart/form-data" method="post">
 	File:<input type="file" name="file">
